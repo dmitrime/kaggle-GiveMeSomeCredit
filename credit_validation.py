@@ -7,16 +7,6 @@ from sklearn.cross_validation import train_test_split, StratifiedKFold
 from sklearn.metrics import roc_curve, auc
 
 
-def predict_column(train, target, est=500):
-    # all columns except col
-    cols = list(set(train.columns)-set([target]))
-    # predict with GBM
-    gbm = GradientBoostingClassifier(n_estimators=est).fit(
-        train[cols], train[target])
-    # return probabilities
-    return gbm.predict_proba(train[cols])[:,1]
-
-
 def add_features(data):
     # remove unnecessary first column
     data.drop(data.columns[0], axis=1, inplace=True)
@@ -63,9 +53,6 @@ def add_features(data):
     data['NoPastDue60-89'] = data['NumberOfTime60-89DaysPastDueNotWorse'] == 0
     data['NoLateOver90'] = data['NumberOfTimes90DaysLate'] == 0
 
-    # predict probability of being late over 90 days and use it as a feature
-    data['PredictedLateOver90'] = predict_column(data, 'NoLateOver90')
-
     print(data.columns)
 
 
@@ -75,7 +62,7 @@ def fit_classifiers(train, test, validate=False):
 
     classifiers = dict()
     # fit random forest to the train data
-    classifiers['rf'] = RandomForestClassifier(n_estimators=500, n_jobs=-1)
+    #classifiers['rf'] = RandomForestClassifier(n_estimators=1000)
     # fit gbm to the train data
     classifiers['gbm1'] = GradientBoostingClassifier(n_estimators=1000)
     # fit gbm with adaboost to the train data
