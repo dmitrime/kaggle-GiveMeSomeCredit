@@ -6,7 +6,6 @@ from sklearn.cross_validation import train_test_split
 from sklearn.metrics import roc_curve, auc
 
 from credit_validation import add_features, fit_classifiers
-#from credit_validation_old import add_features, fit_classifiers
 
 def output(probs, fname):
     with open(fname, 'w') as f:

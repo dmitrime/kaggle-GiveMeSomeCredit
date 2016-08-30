@@ -69,7 +69,7 @@ def fit_classifiers(train, test, validate=False):
     # fit gbm with adaboost to the train data
     #classifiers['gbm2'] = GradientBoostingClassifier(n_estimators=1000, loss='exponential')
     # fit gbm with adaboost to the train data
-    classifiers['xgb'] = xgb.XGBClassifier(max_depth=3, n_estimators=1000, learning_rate=0.05)
+    classifiers['xgb'] = xgb.XGBClassifier(max_depth=3, n_estimators=300, learning_rate=0.05)
 
     # stack the classifiers by building a new dataset where 
     # each classifier's predictions correspond to a feature column.
@@ -86,6 +86,7 @@ def fit_classifiers(train, test, validate=False):
         stacked_test_clf = np.zeros((test.shape[0], N_folds))
         for fold_idx, (fold_train, fold_test) in enumerate(folds):
             clf.fit(X[fold_train], y[fold_train])
+            print sorted(clf.booster().get_fscore().items(), key=lambda x: -x[1])
             # clf_idx-th classifier's predictions on the current fold
             stacked_train[fold_test, clf_idx] = clf.predict_proba(X[fold_test])[:,1]
             stacked_test_clf[:, fold_idx] = clf.predict_proba(X_test)[:,1]
