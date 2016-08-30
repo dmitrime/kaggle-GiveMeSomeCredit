@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import xgboost as xgb
 
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
@@ -64,9 +65,11 @@ def fit_classifiers(train, test, validate=False):
     # fit random forest to the train data
     #classifiers['rf'] = RandomForestClassifier(n_estimators=1000)
     # fit gbm to the train data
-    classifiers['gbm1'] = GradientBoostingClassifier(n_estimators=1000)
+    #classifiers['gbm1'] = GradientBoostingClassifier(n_estimators=1000)
     # fit gbm with adaboost to the train data
-    classifiers['gbm2'] = GradientBoostingClassifier(n_estimators=1000, loss='exponential')
+    #classifiers['gbm2'] = GradientBoostingClassifier(n_estimators=1000, loss='exponential')
+    # fit gbm with adaboost to the train data
+    classifiers['xgb'] = xgb.XGBClassifier(max_depth=3, n_estimators=1000, learning_rate=0.05)
 
     # stack the classifiers by building a new dataset where 
     # each classifier's predictions correspond to a feature column.
@@ -75,6 +78,7 @@ def fit_classifiers(train, test, validate=False):
 
     # make np arrays from pandas dataframe
     X, y = train.as_matrix(columns=cols), train['SeriousDlqin2yrs'].as_matrix()
+    X_test = test.as_matrix(columns=cols)
 
     N_folds = 5
     folds = list(StratifiedKFold(y, N_folds))
@@ -84,7 +88,7 @@ def fit_classifiers(train, test, validate=False):
             clf.fit(X[fold_train], y[fold_train])
             # clf_idx-th classifier's predictions on the current fold
             stacked_train[fold_test, clf_idx] = clf.predict_proba(X[fold_test])[:,1]
-            stacked_test_clf[:, fold_idx] = clf.predict_proba(test[cols])[:,1]
+            stacked_test_clf[:, fold_idx] = clf.predict_proba(X_test)[:,1]
         stacked_test[:, clf_idx] = stacked_test_clf.mean(axis=1)
 
     # fit logistic regression to the stacked predictions
